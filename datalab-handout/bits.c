@@ -1,7 +1,7 @@
 /* 
  * CS:APP Data Lab 
  * 
- * <Please put your name and userid here>
+ * Author: Junoth
  * 
  * bits.c - Source file with your solutions to the Lab.
  *          This is the file you will hand in to your instructor.
@@ -143,7 +143,7 @@ NOTES:
  *   Rating: 1
  */
 int bitXor(int x, int y) {
-  return 2;
+  return ~(~x & ~y) & ~(x & y);
 }
 /* 
  * tmin - return minimum two's complement integer 
@@ -152,9 +152,7 @@ int bitXor(int x, int y) {
  *   Rating: 1
  */
 int tmin(void) {
-
-  return 2;
-
+  return 1 << 31;
 }
 //2
 /*
@@ -165,7 +163,7 @@ int tmin(void) {
  *   Rating: 1
  */
 int isTmax(int x) {
-  return 2;
+  return !(~x ^ (x + 1)) & !!((x + 1) | 0);
 }
 /* 
  * allOddBits - return 1 if all odd-numbered bits in word set to 1
@@ -176,7 +174,7 @@ int isTmax(int x) {
  *   Rating: 2
  */
 int allOddBits(int x) {
-  return 2;
+  return !(0xAA ^ ((x & 0xAA) & ((x >> 8) & 0xAA) & ((x >> 16) & 0xAA) & ((x >> 24) & 0xAA)));
 }
 /* 
  * negate - return -x 
@@ -186,7 +184,7 @@ int allOddBits(int x) {
  *   Rating: 2
  */
 int negate(int x) {
-  return 2;
+  return ~x + 1;
 }
 //3
 /* 
@@ -199,7 +197,7 @@ int negate(int x) {
  *   Rating: 3
  */
 int isAsciiDigit(int x) {
-  return 2;
+  return !(x ^ 0x39) | !(x ^ 0x38) | !((x >> 3) ^ 6);
 }
 /* 
  * conditional - same as x ? y : z 
@@ -209,7 +207,7 @@ int isAsciiDigit(int x) {
  *   Rating: 3
  */
 int conditional(int x, int y, int z) {
-  return 2;
+  return ((!x + (~1 + 1)) & y) | (~(!x + (~1 + 1)) & z);
 }
 /* 
  * isLessOrEqual - if x <= y  then return 1, else return 0 
@@ -219,7 +217,7 @@ int conditional(int x, int y, int z) {
  *   Rating: 3
  */
 int isLessOrEqual(int x, int y) {
-  return 2;
+  return (!((y >> 31) & ~(x >> 31) & 1)) & ((~(y >> 31) & (x >> 31) & 1) | !((y + (~x + 1)) >> 31));
 }
 //4
 /* 
@@ -231,7 +229,7 @@ int isLessOrEqual(int x, int y) {
  *   Rating: 4 
  */
 int logicalNeg(int x) {
-  return 2;
+  return (x >> 31 ^ 1) & (((x >> 31) & 1) ^ (((~x + 1) >> 31) & 1) ^ 1);
 }
 /* howManyBits - return the minimum number of bits required to represent x in
  *             two's complement
@@ -246,7 +244,17 @@ int logicalNeg(int x) {
  *  Rating: 4
  */
 int howManyBits(int x) {
-  return 0;
+  int minusOne = ~1 + 1;
+  int sign = ((x >> 31) & 1) + minusOne;
+  int absX = (sign & x) + ((~sign) & ~x);
+  int c = 0;
+  c = !!(absX >> 16) << 4;       
+  c = c + (!!(absX >> c >> 8) << 3);
+  c = c + (!!(absX >> c >> 4) << 2);
+  c = c + (!!(absX >> c >> 2) << 1);
+  c = c + !!(absX >> c >> 1);
+  c = c + !!(absX >> c);
+  return c + 1;
 }
 //float
 /* 
@@ -261,7 +269,15 @@ int howManyBits(int x) {
  *   Rating: 4
  */
 unsigned floatScale2(unsigned uf) {
-  return 2;
+  unsigned exp = (uf & 0x7FFFFFFF) >> 23;
+  unsigned frac = (uf & 0x007FFFFF);
+  if (exp == 0x00) {
+    if (frac == 0) return uf & 0x80000000;
+    return (uf & 0x80000000) | frac << 1;
+  } else if (exp == 0xFF) {
+    return uf;
+  }
+  return (exp + 1) << 23 | frac | (uf & 0x80000000);
 }
 /* 
  * floatFloat2Int - Return bit-level equivalent of expression (int) f
@@ -276,7 +292,26 @@ unsigned floatScale2(unsigned uf) {
  *   Rating: 4
  */
 int floatFloat2Int(unsigned uf) {
-  return 2;
+  int exp = (uf & 0x7FFFFFFF) >> 23;
+  int frac = (uf & 0x007FFFFF);  
+  int num = 0;
+  if (exp == 0x000000FF || exp - 127 >= 31) {
+    return 0x80000000u;
+  } else if (exp == 0x00000000 || exp < 127) {
+    return 0;
+  }
+  num = exp - 127 - 23;
+  frac = frac | 0x00800000;
+  if (num < 0) {
+    num = (frac >> -num);
+  } else {
+    num = (frac << num);
+  }
+  if (((uf >> 31) & 1) == 1) {
+    num = ~num + 1;
+  }
+
+  return num;
 }
 /* 
  * floatPower2 - Return bit-level equivalent of the expression 2.0^x
@@ -292,5 +327,13 @@ int floatFloat2Int(unsigned uf) {
  *   Rating: 4
  */
 unsigned floatPower2(int x) {
-    return 2;
+  int exp = x + 127;
+  if (exp <= 0) {
+    return 0;
+  }
+  if (exp >= 255) {
+    return 0x7F800000;
+  }
+
+  return exp << 23;
 }
