@@ -22,6 +22,57 @@ int is_transpose(int M, int N, int A[N][M], int B[M][N]);
 char transpose_submit_desc[] = "Transpose submission";
 void transpose_submit(int M, int N, int A[N][M], int B[M][N])
 {
+  int i, j, ii, n1, n2, n3, n4, n5, n6, n7, n8;
+
+  for (i = 0; i < N; i += 8) {
+    for (j = 0; j < M; j += 8) {
+      for (ii = i; ii < i + 8; ++ii) {
+        n1 = A[ii][j];
+        n2 = A[ii][j + 1];
+        n3 = A[ii][j + 2];
+        n4 = A[ii][j + 3];
+        n5 = A[ii][j + 4];
+        n6 = A[ii][j + 5];
+        n7 = A[ii][j + 6];
+        n8 = A[ii][j + 7];
+        B[j][ii] = n1;
+        B[j + 1][ii] = n2;
+        B[j + 2][ii] = n3;
+        B[j + 3][ii] = n4;
+        B[j + 4][ii] = n5;
+        B[j + 5][ii] = n6;
+        B[j + 6][ii] = n7;
+        B[j + 7][ii] = n8;
+      }
+    }
+  }
+}
+
+char trans_two_desc[] = "Transpose two submission";
+void trans_two(int M, int N, int A[N][M], int B[M][N]) {
+  int i, j, ii, n1, n2, n3, n4, n5, n6, n7, n8;
+  for (i = 0; i < N; i += 4) {
+    for (j = 0; j < M; j += 4) {
+      for (ii = i; ii < i + 4; ii += 2) {
+        n1 = A[ii][j];
+        n2 = A[ii][j + 1];
+        n3 = A[ii][j + 2];
+        n4 = A[ii][j + 3];
+        n5 = A[ii + 1][j];
+        n6 = A[ii + 1][j + 1];
+        n7 = A[ii + 1][j + 2];
+        n8 = A[ii + 1][j + 3];
+        B[j][ii] = n1;
+        B[j + 1][ii] = n2;
+        B[j + 2][ii] = n3;
+        B[j + 3][ii] = n4;
+        B[j][ii + 1] = n5;
+        B[j + 1][ii + 1] = n6;
+        B[j + 2][ii + 2] = n7;
+        B[j + 3][ii + 3] = n8;
+      }
+    }
+  }
 }
 
 /* 
@@ -61,6 +112,7 @@ void registerFunctions()
     /* Register any additional transpose functions */
     registerTransFunction(trans, trans_desc); 
 
+    registerTransFunction(trans_two, trans_two_desc);
 }
 
 /* 
