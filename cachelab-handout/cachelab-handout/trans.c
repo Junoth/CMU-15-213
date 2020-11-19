@@ -51,6 +51,7 @@ void transpose_submit(int M, int N, int A[N][M], int B[M][N])
 char trans_two_desc[] = "Transpose two submission";
 void trans_two(int M, int N, int A[N][M], int B[M][N]) {
   int i, j, ii, n1, n2, n3, n4, n5, n6, n7, n8;
+  
   for (i = 0; i < N; i += 4) {
     for (j = 0; j < M; j += 4) {
       for (ii = i; ii < i + 4; ii += 2) {
@@ -68,8 +69,8 @@ void trans_two(int M, int N, int A[N][M], int B[M][N]) {
         B[j + 3][ii] = n4;
         B[j][ii + 1] = n5;
         B[j + 1][ii + 1] = n6;
-        B[j + 2][ii + 2] = n7;
-        B[j + 3][ii + 3] = n8;
+        B[j + 2][ii + 1] = n7;
+        B[j + 3][ii + 1] = n8;
       }
     }
   }
